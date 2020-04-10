@@ -6,10 +6,8 @@ use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Command\Guzzle\DescriptionInterface;
 use GuzzleHttp\Command\Guzzle\GuzzleClient;
-use GuzzleHttp\Event\CompleteEvent;
+use GuzzleHttp\Command\Result;
 use GuzzleHttp\Exception\BadResponseException;
-use GuzzleHttp\Message\Response;
-use GuzzleHttp\Stream\Stream;
 
 class MaibClient extends GuzzleClient
 {
@@ -22,25 +20,7 @@ class MaibClient extends GuzzleClient
 	{
 		$client = $client instanceof ClientInterface ? $client : new Client();
 		$description = $description instanceof DescriptionInterface ? $description : new MaibDescription();
-		parent::__construct($client, $description, $config);
-
-		$cachedResponse = new Response(200);
-
-		$this->getHttpClient()->getEmitter()->on(
-			'complete',
-			function (CompleteEvent $e) use ($cachedResponse) {
-				$array1 = explode(PHP_EOL, trim((string)$e->getResponse()->getBody()));
-				$result = array();
-				foreach($array1 as $key => $value) {
-					$array2 = explode(':', $value);
-					$result[$array2[0]] = isset($array2[1])? trim( $array2[1] ) : '';
-				}
-
-                		$stream = Stream::factory(json_encode($result));
-                		$cachedResponse->setBody($stream);
-                		$e->intercept($cachedResponse);
-			}
-		);
+		parent::__construct($client, $description, null, null, null, $config);
 	}
 
     /**
@@ -56,7 +36,13 @@ class MaibClient extends GuzzleClient
         try {
             $response = parent::__call($name, $arguments);
 
-            return json_decode($response['additionalProperties'], true);
+            $array1 = explode(PHP_EOL, trim((string)$response->offsetGet('additionalProperties')));
+            $result = array();
+            foreach($array1 as $value) {
+              $array2 = explode(':', $value);
+              $result[$array2[0]] = isset($array2[1])? trim( $array2[1] ) : '';
+            }
+            return $result;
         }
         catch (\Exception $ex) {
             throw $ex;
@@ -216,6 +202,31 @@ class MaibClient extends GuzzleClient
 	{
 		$args = array(
 			'command'  => 'r',
+			'trans_id' => $transId,
+			'amount' => $amount,
+		);
+
+		return parent::revertTransaction($args);
+	}
+
+	/**
+	 * Transaction refund
+	 * @param  string $transId
+	 * @param  string $amount          full original transaction amount is always refunded.
+	 * @return array  RESULT, RESULT_CODE
+	 * RESULT         - OK              - successful refund transaction
+	 * 		    FAILED          - failed refund transaction
+	 * RESULT_CODE    - result code returned from Card Suite Processing RTPS (3 digits)
+	 * refund_transaction_id - refund transaction identifier for obtaining refund payment details
+	 * error          - In case of an error
+	 * warning        - In case of warning (reserved for future use).
+	 *
+	 * Transaction status in payment server after refund is not changed.
+	 */
+	public function refundTransaction($transId, $amount)
+	{
+		$args = array(
+			'command'  => 'k',
 			'trans_id' => $transId,
 			'amount' => $amount,
 		);

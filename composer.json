@@ -1,9 +1,9 @@
 {
-  "name": "fruitware/maib-api",
+  "name": "indrivo/maib-api",
   "type": "library",
   "description": "",
   "keywords": ["maib", "payment"],
-  "homepage": "https://github.com/slavic18/MaibAPI",
+  "homepage": "https://github.com/indrivo/maib-api",
   "license": "MIT",
   "authors": [
     {
@@ -14,9 +14,8 @@
   ],
   "require": {
     "php": ">=5.4.0",
-    "guzzlehttp/guzzle": "~5.0",
-    "guzzlehttp/guzzle-services": "~0.5",
-    "guzzlehttp/log-subscriber": "~1.0",
+    "guzzlehttp/guzzle": "~6.0",
+    "guzzlehttp/guzzle-services": "~1.0",
     "monolog/monolog": "~1.14"
   },
   "autoload": {
