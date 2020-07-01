@@ -209,7 +209,31 @@ class MaibDescription extends Description {
 							'location' => 'formParam',
 							'required' => true,
 						],
-						'amount '  => [
+						'amount'  => [
+							'type'     => 'string',
+							'location' => 'formParam',
+							'required' => false,
+							'max'      => 12,
+						],
+					]
+				],
+				'refundTransaction'        => [
+					'httpMethod'    => 'POST',
+					'uri'           => '/ecomm2/MerchantHandler',
+					'description'   => 'identifies the request for refund transaction',
+					'responseModel' => 'getResponse',
+					'parameters'    => [
+						'command'  => [
+							'type'     => 'string',
+							'location' => 'formParam',
+							'required' => true,
+						],
+						'trans_id' => [
+							'type'     => 'string',
+							'location' => 'formParam',
+							'required' => true,
+						],
+						'amount'  => [
 							'type'     => 'string',
 							'location' => 'formParam',
 							'required' => false,
